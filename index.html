@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ByteMarket · Panel de Inventario Inteligente</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="container header-content">
+            <div>
+                <h1>ByteMarket <span>· Inventario y Reposición</span></h1>
+                <p class="subtitle">Grupo 2 · Panel de visualización conectado a Supabase</p>
+            </div>
+            <div class="kpi-box">
+                <span class="kpi-label">Valoración Total del Almacén</span>
+                <strong id="valor-total">0,00 €</strong>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Resumen de alertas -->
+        <section class="stats-grid">
+            <div class="card stat-card">
+                <span class="stat-title">Total Referencias (SKU)</span>
+                <strong id="total-skus">0</strong>
+            </div>
+            <div class="card stat-card">
+                <span class="stat-title">Stock Disponible</span>
+                <strong id="total-disponible" class="text-ok">0</strong>
+            </div>
+            <div class="card stat-card">
+                <span class="stat-title">Requieren Reposición (Bajo / Agotado)</span>
+                <strong id="total-reponer" class="text-alert">0</strong>
+            </div>
+        </section>
+
+        <!-- Formulario rápido para dar de alta productos en Supabase -->
+        <section class="card form-section">
+            <h2>Alta Rápida de Producto</h2>
+            <form id="form-producto" class="form-grid">
+                <input type="text" id="sku" placeholder="SKU (ej. PER-04)" required>
+                <input type="text" id="nombre" placeholder="Nombre del producto" required>
+                <select id="categoria" required>
+                    <option value="PERIFERICO">PERIFERICO</option>
+                    <option value="COMPONENTE">COMPONENTE</option>
+                    <option value="EQUIPO">EQUIPO</option>
+                </select>
+                <input type="number" id="precio" step="0.01" min="0" placeholder="Precio (€)" required>
+                <input type="number" id="unidades" min="0" placeholder="Unidades" required>
+                <input type="number" id="stock_minimo" min="0" placeholder="Stock mínimo" required>
+                <button type="submit" class="btn-primary">Guardar en Supabase</button>
+            </form>
+            <p id="mensaje-estado" class="feedback-msg"></p>
+        </section>
+
+        <!-- Filtros y Tabla de Inventario -->
+        <section class="card">
+            <div class="table-header">
+                <h2>Inventario en Tiempo Real</h2>
+                <div class="filters">
+                    <select id="filtro-categoria">
+                        <option value="TODOS">Todas las categorías</option>
+                        <option value="PERIFERICO">PERIFERICO</option>
+                        <option value="COMPONENTE">COMPONENTE</option>
+                        <option value="EQUIPO">EQUIPO</option>
+                    </select>
+                    <select id="filtro-estado">
+                        <option value="TODOS">Todos los estados</option>
+                        <option value="DISPONIBLE">DISPONIBLE</option>
+                        <option value="BAJO">BAJO</option>
+                        <option value="AGOTADO">AGOTADO</option>
+                    </select>
+                    <button id="btn-recargar" class="btn-secondary">Actualizar</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Stock (Mín)</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-productos">
+                        <tr><td colspan="6" class="empty-msg">Cargando datos desde Supabase...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Sustituye estos valores por los de tu proyecto en Supabase (Project Settings -> API)
+        const SUPABASE_URL = "https://TU_PROYECTO.supabase.co";
+        const SUPABASE_KEY = "TU_ANON_PUBLIC_KEY";
+
+        let productosCache = [];
+
+        async function cargarProductos() {
+            const tbody = document.getElementById("tabla-productos");
+            if (SUPABASE_URL.includes("TU_PROYECTO")) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">Configura tu SUPABASE_URL y SUPABASE_KEY en index.html para ver datos reales.</td></tr>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/productos?select=*&order=sku.asc`, {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                if (!res.ok) throw new Error("Error al conectar con Supabase");
+                productosCache = await res.json();
+                actualizarKPIs(productosCache);
+                renderizarTabla();
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-msg">Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function actualizarKPIs(lista) {
+            let valorTotal = 0;
+            let disponibles = 0;
+            let reponer = 0;
+
+            lista.forEach(p => {
+                valorTotal += Number(p.precio) * Number(p.unidades);
+                if (p.estado === "DISPONIBLE") disponibles++;
+                else reponer++;
+            });
+
+            document.getElementById("valor-total").textContent = valorTotal.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+            document.getElementById("total-skus").textContent = lista.length;
+            document.getElementById("total-disponible").textContent = disponibles;
+            document.getElementById("total-reponer").textContent = reponer;
+        }
+
+        function renderizarTabla() {
+            const tbody = document.getElementById("tabla-productos");
+            const catFiltro = document.getElementById("filtro-categoria").value;
+            const estFiltro = document.getElementById("filtro-estado").value;
+
+            const filtrados = productosCache.filter(p => {
+                const okCat = catFiltro === "TODOS" || p.categoria === catFiltro;
+                const okEst = estFiltro === "TODOS" || p.estado === estFiltro;
+                return okCat && okEst;
+            });
+
+            if (filtrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">No hay productos que coincidan con el filtro.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtrados.map(p => `
+                <tr>
+                    <td><strong>${p.sku}</strong></td>
+                    <td>${p.nombre}</td>
+                    <td><span class="tag-cat">${p.categoria}</span></td>
+                    <td>${Number(p.precio).toFixed(2)} €</td>
+                    <td>${p.unidades} <small>(Mín: ${p.stock_minimo})</small></td>
+                    <td><span class="badge badge-${p.estado.toLowerCase()}">${p.estado}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        document.getElementById("form-producto").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById("mensaje-estado");
+            const unidades = parseInt(document.getElementById("unidades").value);
+            const stockMinimo = parseInt(document.getElementById("stock_minimo").value);
+
+            // Cálculo automático del estado igual que en Java
+            let estado = "DISPONIBLE";
+            if (unidades === 0) estado = "AGOTADO";
+            else if (unidades <= stockMinimo) estado = "BAJO";
+
+            const nuevoProducto = {
+                sku: document.getElementById("sku").value.toUpperCase().trim(),
+                nombre: document.getElementById("nombre").value.trim(),
+                categoria: document.getElementById("categoria").value,
+                precio: parseFloat(document.getElementById("precio").value),
+                unidades: unidades,
+                stock_minimo: stockMinimo,
+                estado: estado
+            };
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/productos`, {
+                    method: "POST",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify(nuevoProducto)
+                });
+                if (!res.ok) throw new Error("SKU duplicado o datos inválidos.");
+                msg.textContent = "Producto guardado correctamente en Supabase.";
+                msg.style.color = "#16a34a";
+                e.target.reset();
+                cargarProductos();
+            } catch (err) {
+                msg.textContent = "Error: " + err.message;
+                msg.style.color = "#dc2626";
+            }
+        });
+
+        document.getElementById("filtro-categoria").addEventListener("change", renderizarTabla);
+        document.getElementById("filtro-estado").addEventListener("change", renderizarTabla);
+        document.getElementById("btn-recargar").addEventListener("click", cargarProductos);
+
+        cargarProductos();
+    </script>
+</body>
+</html>
