@@ -1,0 +1,324 @@
+:root {
+    /* Paleta ByteMarket: Hardware Tech + Logística de Almacén */
+    --bg: #090d16;
+    --surface: #111827;
+    --surface-hover: #1e293b;
+    --topbar-bg: #05080f;
+    --primary: #f8fafc;
+    --accent: #06b6d4;        /* Cian tecnológico (ByteMarket) */
+    --accent-hover: #0891b2;
+    --accent-glow: rgba(6, 182, 212, 0.25);
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #1e293b;
+
+    /* Semáforo de Estado de Stock (Alertas de reposición) */
+    --ok-bg: rgba(16, 185, 129, 0.15);
+    --ok-text: #34d399;
+    --ok-border: rgba(16, 185, 129, 0.4);
+
+    --warn-bg: rgba(245, 158, 11, 0.15);
+    --warn-text: #fbbf24;
+    --warn-border: rgba(245, 158, 11, 0.4);
+
+    --danger-bg: rgba(239, 68, 68, 0.15);
+    --danger-text: #f87171;
+    --danger-border: rgba(239, 68, 68, 0.4);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Cabecera estilo terminal tecnológica */
+.topbar {
+    background: linear-gradient(90deg, var(--topbar-bg) 0%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 0;
+    margin-bottom: 28px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.topbar h1 {
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+}
+
+.topbar h1 span {
+    font-weight: 400;
+    color: var(--accent);
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
+
+/* Indicador de Valoración Total del Almacén */
+.kpi-box {
+    background: rgba(6, 182, 212, 0.08);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    padding: 12px 22px;
+    border-radius: 10px;
+    text-align: right;
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.kpi-label {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+}
+
+.kpi-box strong {
+    font-size: 1.6rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--accent);
+}
+
+/* Tarjetas de métricas rápidas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    margin-bottom: 0;
+    border-top: 3px solid var(--accent);
+}
+
+.stat-card:nth-child(2) {
+    border-top-color: #10b981;
+}
+
+.stat-card:nth-child(3) {
+    border-top-color: #ef4444;
+}
+
+.stat-title {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.stat-card strong {
+    font-size: 1.9rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--primary);
+}
+
+.text-ok { color: var(--ok-text) !important; }
+.text-alert { color: var(--danger-text) !important; }
+
+h2 {
+    font-size: 1.15rem;
+    margin-bottom: 16px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Formulario de Alta de Productos */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+    gap: 12px;
+}
+
+input, select, button {
+    background-color: #090d16;
+    color: var(--text);
+    padding: 10px 12px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+input::placeholder {
+    color: #64748b;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.btn-primary {
+    background-color: var(--accent);
+    color: #05080f;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+    color: #ffffff;
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.btn-secondary {
+    background-color: #1e293b;
+    color: var(--text);
+    border: 1px solid #334155;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.feedback-msg {
+    margin-top: 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+/* Tabla de Inventario y Filtros */
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.table-header h2 {
+    margin-bottom: 0;
+}
+
+.filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th, td {
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.92rem;
+}
+
+th {
+    background-color: #0b1120;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+tbody tr:hover {
+    background-color: var(--surface-hover);
+}
+
+/* Código SKU estilo monospace de almacén */
+td:first-child strong {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--accent);
+    background: rgba(6, 182, 212, 0.1);
+    padding: 3px 7px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+}
+
+/* Etiquetas de Categoría Hardware */
+.tag-cat {
+    background: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+/* Badges LED de EstadoStock */
+.badge {
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.badge-disponible {
+    background: var(--ok-bg);
+    color: var(--ok-text);
+    border: 1px solid var(--ok-border);
+}
+
+.badge-bajo {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border: 1px solid var(--warn-border);
+}
+
+.badge-agotado {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+    border: 1px solid var(--danger-border);
+}
+
+.empty-msg {
+    text-align: center;
+    color: var(--muted);
+    padding: 28px;
+}
