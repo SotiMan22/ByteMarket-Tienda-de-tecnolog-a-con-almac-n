@@ -6,8 +6,9 @@ import java.util.Locale;
 
 public class SupabaseSync {
     // Sustituye estos valores por los de tu proyecto en Supabase (Project Settings -> API)
-    private static final String SUPABASE_URL = "https://TU_PROYECTO.supabase.co";
-    private static final String SUPABASE_KEY = "TU_ANON_PUBLIC_KEY";
+    private static final String SUPABASE_URL = "https://tugisllbggytxvfmithe.supabase.co";
+    private static final String SUPABASE_KEY = "sb_publishable_mt53Mhjxp2W6vyUxG_jS-w_gA7uuuon"; 
+
 
     private final HttpClient client = HttpClient.newHttpClient();
 
